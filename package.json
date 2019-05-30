@@ -1,0 +1,20 @@
+{
+  "name": "clean-your-room",
+  "version": "1.0.0",
+  "description": "Cleaning up some messy code by breaking it up into functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha ./tests/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stackeducation/clean-your-room.git"
+  },
+  "author": "Stack Education",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "4.2.0",
+    "mocha": "^6.1.4"
+  }
+}
