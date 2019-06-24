@@ -1,102 +1,74 @@
-function calculateMedicalProductPrice(product,selectedOptions,familyMembersToCover){
-  if (fmtc.includes('ee')) {
-    var eeCost = product.costs.find(function (cost) {
-      return cost.role === 'ee'
-    })
-
-    price += eeCost.price
-  }
-
-  if (fmtc.includes('sp')) {
-    var spCost = product.costs.find(function (cost) {
-      return cost.role === 'sp'
-    })
-
-    price += spCost.price
-  }
-
-  if (fmtc.includes('ch')) {
-    var chCost = product.costs.find(function (cost) {
-      return cost.role === 'ch'
-    })
-
-    price += chCost.price
-  }
-
-  if (fmtc.includes('chs')) {
-    var chsCost = product.costs.find(function (cost) {
-      return cost.role === 'chs'
-    })
-
-    price += chsCost.price
-  }
-
-  return parseInt(price * 100) / 100
-
-}
 module.exports.calculateProductPrice = function (product, employee, selectedOptions) {
   var price = 0
   var fmtc = selectedOptions.familyMembersToCover
 
-  function calculateMedicalProductPrice(product,selectedOptions,fmtc){}
-      switch (product.type) {
-      case 'volLife':
-      if (fmtc.includes('ee')) {
-        var eeCoverage = selectedOptions.coverageLevel.find(function (coverage) {
-          return coverage.role === 'ee'
-        })
-
-        var eeCost = product.costs.find(function (cost) {
-          return cost.role === 'ee'
-        })
-
-        price += (eeCoverage.coverage / eeCost.costDivisor) * eeCost.price
-      }
-
-      if (fmtc.includes('sp')) {
-        var spCoverage = selectedOptions.coverageLevel.find(function (coverage) {
-          return coverage.role === 'sp'
-        })
-
-        var spCost = product.costs.find(function (cost) {
-          return cost.role === 'sp'
-        })
-
-        price += (spCoverage.coverage / spCost.costDivisor) * spCost.price
-      }
-
-      if (product.employerContribution.mode === 'dollar') {
-        price = price - product.employerContribution.contribution
-      } else {
-        var dollarsOff = price * (product.employerContribution.contribution / 100)
-        price = price - dollarsOff
-      }
-
+  switch (product.type){
+    case 'medical':
+      if (fmtc.includes('ee')) price += MedicalProductPrice(product, 'ee')
+      if (fmtc.includes('sp')) price += MedicalProductPrice(product, 'sp')
+      if (fmtc.includes('ch')) price += MedicalProductPrice(product, 'ch')
+      if (fmtc.includes('chs')) price += MedicalProductPrice(product, 'chs')
+      return parseInt(price * 100) / 100
+    case 'volLife':
+      if(fmtc.includes('ee')) price += volLifeProductPrice(product, 'ee',  selectedOptions)
+      if(fmtc.includes('sp')) price += volLifeProductPrice(product, 'sp',  selectedOptions)
       return parseInt(price * 100) / 100
     case 'ltd':
-      if (fmtc.includes('ee')) {
-        var eeCoverage = product.coverage.find(function (coverage) {
-          return coverage.role === 'ee'
-        })
-
-        var eeCost = product.costs.find(function (cost) {
-          return cost.role === 'ee'
-        })
-
-        var salaryPercentage = eeCoverage.percentage / 100
-
-        price += ((employee.salary * salaryPercentage) / eeCost.costDivisor) * eeCost.price
-      }
-
-      if (product.employerContribution.mode === 'dollar') {
-        price = price - product.employerContribution.contribution
-      } else {
-        var dollarsOff = price * product.employerContribution.contribution
-        price = price - dollarsOff
-      }
-
+      if (fmtc.includes('ee')) price += ltdPrice(product,'ee',employee)
       return parseInt(price * 100) / 100
     default:
       return 0
   }
+  
+}
+
+function MedicalProductPrice(product, role){
+  var roleCost = product.costs.find(function (cost) {
+    return cost.role === role
+  })
+
+  return roleCost.price
+}
+
+function volLifeProductPrice (product,role,selectedOptions,){
+  var price = 0
+  var volCoverage = selectedOptions.coverageLevel.find(function (coverage) {
+    return coverage.role === role
+  })
+  var roleCost = product.costs.find(function (cost) {
+    return cost.role === role
+  })
+
+  price += (volCoverage.coverage / roleCost.costDivisor) * roleCost.price
+
+  if (product.employerContribution.mode === 'dollar') {
+    price = price - product.employerContribution.contribution
+  } else {
+    var dollarsOff = price * (product.employerContribution.contribution / 100)
+    price = price - dollarsOff
+  }
+
+  return price
+}
+function ltdPrice (product,role, employee){
+  var price = 0
+  var volCoverage = product.coverage.find(function (coverage) {
+    return coverage.role === role
+  })
+
+  var roleCost = product.costs.find(function (cost) {
+    return cost.role === role
+  })
+
+  var salaryPercentage = volCoverage.percentage / 100
+
+  price += ((employee.salary * salaryPercentage) / roleCost.costDivisor) * roleCost.price
+
+if (product.employerContribution.mode === 'dollar') {
+  price = price - product.employerContribution.contribution
+} else {
+  var dollarsOff = price * product.employerContribution.contribution
+  price = price - dollarsOff
+}
+return price
 }
